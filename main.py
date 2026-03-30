@@ -18,6 +18,17 @@ args = parser.parse_args()
 # --- видео ---
 cap = cv2.VideoCapture(args.video)
 
+# --- параметры видео ---
+fps = cap.get(cv2.CAP_PROP_FPS)
+if fps <= 0:
+    fps = 30
+
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+# --- writer ---
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter("output.mp4", fourcc, fps, (width, height))
 
 events = []
 
@@ -33,7 +44,7 @@ polygon = np.array([
 
 # --- параметры стабильности ---
 FRAME_HISTORY = 25
-ENTER_THRESHOLD = 20
+ENTER_THRESHOLD = 35
 EXIT_THRESHOLD = 35
 
 # История последних N кадров
@@ -259,13 +270,13 @@ while True:
     overlay = frame.copy()
     cv2.fillPoly(overlay, [polygon], color)
     cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, frame)
-
+    out.write(frame)
     # --- отображение ---
     cv2.imshow("Video", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
+out.release()
 
 
 # --- итоговая статистика ---
